@@ -1,0 +1,41 @@
+.card-header{
+  display: flex;
+   justify-content: center; 
+ }
+ .card-title{
+   display: flex;
+   justify-content: center;
+ }
+ #Instruction{
+   display: flex;
+   justify-content: center;
+   margin-top:5%;
+ }
+ .Form{
+   display: flex;
+   justify-content: center;
+ }
+ div.gallery {
+   margin: 10px;
+   border: 1px solid #ccc;
+   float: left;
+   height: 200px;
+   width: 200px;
+   margin-left: 20px;
+ }
+ 
+ div.gallery:hover {
+   border: 3px solid #777;
+ }
+ 
+ div.gallery img {
+ margin-top:0px;
+   width: 200px;
+   height: 200px; 
+   object-fit: cover;
+ }
+ h1{
+   font-family: 'ZCOOL KuaiLe', cursive;
+     display: flex;
+   justify-content: center;
+ }

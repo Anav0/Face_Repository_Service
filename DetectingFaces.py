@@ -24,21 +24,25 @@ def upload_image():
     # Check if a valid image file was uploaded
     if request.method == 'POST':
         if 'file' not in request.files:
-            return redirect(request.url)
-
+            return json.dumps({'success':False}), 404, {'ContentType':'application/json'}
         file = request.files['file']
 
         if file.filename == '':
-            return redirect(request.url)
+            return json.dumps({'success':False}), 404, {'ContentType':'application/json'}
 
         if file and allowed_file(file.filename):
+                name=request.form['Imie']
+                surname=request.form['Nazwisko']
+                print(name)
+                print(surname)
                 img = face_recognition.load_image_file(file)
                 unknown_face_encodings = face_recognition.face_encodings(img)
-                collection.insert({"_id_akcji":0,"value":str(unknown_face_encodings[0][0])})
+                collection.insert({"_id_akcji":0,"imie":name,"nazwisko":surname,"value":str(unknown_face_encodings[0])})
                 return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
         else:
                 return json.dumps({'success':False}), 404, {'ContentType':'application/json'} 
- 
+    else:
+         return json.dumps({'success':False}), 404, {'ContentType':'application/json'}
     #Clean data from spaces and other symbols. Preparing for Convert to Float list 
 def CleanDataFromDB(datafromdb):
     result=datafromdb.replace('\n','')

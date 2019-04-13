@@ -60,32 +60,32 @@ def DetectFacesinImage(file_stream):
         # Get face encodings for any faces in the uploaded image
     unknown_face_encodings = face_recognition.face_encodings(img)
 
-    face_found = False
-    faceExist = False
-    listForImages=[]
+    Name="undefined"
+    id="undefined"
     #Check if exist such value 
-    values=collection.distinct("value")         
-    for faces in range(len(values)):
+    #values=collection.distinct("value")
+    values=collection.find({})         
+    for faces in values:
         #Convert string to float list
+                 print(faces)
                  helplist=[]
                  pureList=[]
-                 helplist=CleanDataFromDB(values[faces]).split(' ')
+                 helplist=CleanDataFromDB(faces["value"]).split(' ')
                  for point in range(len(helplist)):
                      if helplist[point] is not '':
                         pureList.append(float(helplist[point])) 
                 #Compare faces from Database and photo
                  if ComparingFaces(pureList,unknown_face_encodings[0])[0]:
                 #Add path to photos to list
-                    record=collection.find_one({"value":values[faces]})
-                    print(record)
-                    faceExist = True
-                    face_found = True                                 
+                    record=collection.find_one({"value":faces["value"]})
+                    print(record) 
+                    Name=faces["imie"]  
+                    id=faces["_id"]                          
     # Return the result as json{"value":values[faces]}
     
     result = {
-        "face_found_in_image": face_found,
-        "is_picture_of_obama": faceExist,
-        "pictures where we observed faces":listForImages
+        "name":Name,
+        "_id":str(id)  
     }
    # print(RequireName)
   #  if faceExist:

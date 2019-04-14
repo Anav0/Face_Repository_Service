@@ -41,6 +41,7 @@ def upload_image():
                 print(surname)
                 img = face_recognition.load_image_file(file)
                 unknown_face_encodings = face_recognition.face_encodings(img)
+
                 collection.insert({"imie":name,"nazwisko":surname,"value":str(unknown_face_encodings[0])})
                 return json.dumps({'success':True}), 200, {'ContentType':'application/json'}
         else:
@@ -103,6 +104,14 @@ def GetRCP():
     return dumps(result)
 
 #Clean data from spaces and other symbols. Preparing for Convert to Float list
+                collection.insert({"_id_akcji":0,"imie":name,"nazwisko":surname,"value":str(unknown_face_encodings[0])})
+                return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
+        else:
+                return json.dumps({'success':False}), 404, {'ContentType':'application/json'} 
+    else:
+         return json.dumps({'success':False}), 404, {'ContentType':'application/json'}
+    #Clean data from spaces and other symbols. Preparing for Convert to Float list 
+    
 def CleanDataFromDB(datafromdb):
     result=datafromdb.replace('\n','')
     result=result.replace('[','')
@@ -119,32 +128,35 @@ def DetectFacesinImage(file_stream):
         # Get face encodings for any faces in the uploaded image
     unknown_face_encodings = face_recognition.face_encodings(img)
 
-    face_found = False
-    faceExist = False
-    listForImages=[]
-    #Check if exist such value
-    values=collection.distinct("value")
-    for faces in range(len(values)):
+
+    Name="undefined"
+    id="undefined"
+    #Check if exist such value 
+    #values=collection.distinct("value")
+    values=collection.find({})         
+    for faces in values:
+
         #Convert string to float list
+                 print(faces)
                  helplist=[]
                  pureList=[]
-                 helplist=CleanDataFromDB(values[faces]).split(' ')
+                 helplist=CleanDataFromDB(faces["value"]).split(' ')
                  for point in range(len(helplist)):
                      if helplist[point] is not '':
                         pureList.append(float(helplist[point]))
                 #Compare faces from Database and photo
                  if ComparingFaces(pureList,unknown_face_encodings[0])[0]:
                 #Add path to photos to list
-                    record=collection.find_one({"value":values[faces]})
-                    print(record)
-                    faceExist = True
-                    face_found = True
+
+                    record=collection.find_one({"value":faces["value"]})
+                    print(record) 
+                    Name=faces["imie"]  
+                    id=faces["_id"]                          
     # Return the result as json{"value":values[faces]}
 
     result = {
-        "face_found_in_image": face_found,
-        "is_picture_of_obama": faceExist,
-        "pictures where we observed faces":listForImages
+        "name":Name,
+        "_id":str(id)  
     }
    # print(RequireName)
   #  if faceExist:

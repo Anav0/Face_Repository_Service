@@ -103,14 +103,6 @@ def GetRCP():
         return json.dumps({'success':False,'message':"No RCP record found"}), 404, {'ContentType':'application/json'}
     return dumps(result)
 
-#Clean data from spaces and other symbols. Preparing for Convert to Float list
-                collection.insert({"_id_akcji":0,"imie":name,"nazwisko":surname,"value":str(unknown_face_encodings[0])})
-                return json.dumps({'success':True}), 200, {'ContentType':'application/json'} 
-        else:
-                return json.dumps({'success':False}), 404, {'ContentType':'application/json'} 
-    else:
-         return json.dumps({'success':False}), 404, {'ContentType':'application/json'}
-    #Clean data from spaces and other symbols. Preparing for Convert to Float list 
     
 def CleanDataFromDB(datafromdb):
     result=datafromdb.replace('\n','')

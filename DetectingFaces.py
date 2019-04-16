@@ -5,10 +5,12 @@ from pymongo import MongoClient
 from flask import json
 from bson.json_util import dumps
 from bson import ObjectId
+from flask_cors import CORS
 
 # You can change this to any folder on your system
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 app = Flask(__name__)
+CORS(app)
 client = MongoClient('localhost', 27017)
 db = client['WorkersFacesDb']
 collection = db['Employees']
@@ -69,9 +71,6 @@ def PostRCP():
     employee_id = request.args.get("employee_id")
     time_stamp = request.args.get("time_stamp")
     action = request.args.get("action")
-
-    print(employee_id,time_stamp,action)
-
     if employee_id is None or time_stamp is None or action is None:
         return json.dumps({'success':False, 'message':"Lack of required parameters"}), 400, {'ContentType':'application/json'}
 
@@ -103,7 +102,7 @@ def GetRCP():
         return json.dumps({'success':False,'message':"No RCP record found"}), 404, {'ContentType':'application/json'}
     return dumps(result)
 
-    
+
 def CleanDataFromDB(datafromdb):
     result=datafromdb.replace('\n','')
     result=result.replace('[','')
@@ -123,9 +122,9 @@ def DetectFacesinImage(file_stream):
 
     Name="undefined"
     id="undefined"
-    #Check if exist such value 
+    #Check if exist such value
     #values=collection.distinct("value")
-    values=collection.find({})         
+    values=collection.find({})
     for faces in values:
 
         #Convert string to float list
@@ -141,14 +140,14 @@ def DetectFacesinImage(file_stream):
                 #Add path to photos to list
 
                     record=collection.find_one({"value":faces["value"]})
-                    print(record) 
-                    Name=faces["imie"]  
-                    id=faces["_id"]                          
+                    Name=faces["imie"]
+                    id=faces["_id"]
+
     # Return the result as json{"value":values[faces]}
 
     result = {
         "name":Name,
-        "_id":str(id)  
+        "_id":str(id)
     }
    # print(RequireName)
   #  if faceExist:

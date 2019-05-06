@@ -26,34 +26,34 @@ def Check():
     return DetectFacesinImage(file)
 
 @app.route('/worker', methods=['POST'])
-def upload_image():
+def PostWorker():
 #fullname, hourlyWage, overtimeHourlyWage, email, phone, postion, department
 
     # Check if a valid image file was uploaded
     if request.method == 'POST':
-        if 'file' not in request.files:
+        if 'photo' not in request.files:
             return json.dumps({'success':False}), 404, {'ContentType':'application/json'}
-        file = request.files['file']
+        file = request.files['photo']
 
         if file.filename == '':
             return json.dumps({'success':False}), 404, {'ContentType':'application/json'}
-
+        print(request.form)
         if file and allowed_file(file.filename):
                 fullname=request.form['fullname']
-                hourlyWage=request.form['hourlyWage']
-                overtimeHourlyWage=request.form['overtimeHourlyWage']
+                hourlyWage=float(request.form['hourlyWage'])
+                overtimeHourlyWage=float(request.form['overtimeHourlyWage'])
                 email=request.form['email']
                 phone=request.form['phone']
-                postion=request.form['postion']
-                department=request.form['department']             
-                print(fullname)
+                position = request.form['position']
+                department=request.form['department']
                 img = face_recognition.load_image_file(file)
                 unknown_face_encodings = face_recognition.face_encodings(img)
 
-                collection.insert({"fullname":fullname,
+                collection.insert_one({"fullname":fullname,
                 "hourlyWage":hourlyWage,
                 "overtimeHourlyWage":overtimeHourlyWage,
-                "email":email,"phone":phone,
+                "email":email,
+                "phone":phone,
                 "position":position,
                 "department":department,
                 "value":str(unknown_face_encodings[0])})
@@ -77,6 +77,28 @@ def GetPerson():
 
     return dumps(result)
 
+
+@app.route('/worker', methods=["PUT"])
+def UpdateWorker():
+    try:
+        worker = request.files["worker"]
+        photo = request.files["photo"]
+    except:
+        return json.dumps({'success': False, 'message': "Invalid arguments"}), 400, {'ContentType': 'application/json'}
+
+    if worker["_id"] is None:
+        return json.dumps({'success': False, 'message': "Lack of required parameters"}), 400, {'ContentType': 'application/json'}
+
+    return dumps(collection.update_one({'_id': worker["_id"]},
+                                       {'fullname': worker["fullname"],
+                                        'hourlyWage': worker["hourlyWage"],
+                                        'overtimeHourlyWage': worker['overtimeHourlyWage'],
+                                        'email': worker['email'],
+                                        'phone': worker['phone'],
+                                        'position': worker['position'],
+                                        'department': worker['department']
+                                        })), 200, {'ContentType': 'application/json'}
+
 @app.route('/rcp', methods=["POST"])
 def PostRCP():
     try:
@@ -97,6 +119,7 @@ def PostRCP():
     rcp_collection.insert_one(rcp)
 
     return dumps(rcp), 200, {'ContentType':'application/json'}
+
 @app.route('/rcp', methods=["PATCH"])
 def UpdateRCP():
     try:
@@ -110,47 +133,11 @@ def UpdateRCP():
 
     return dumps(rcp_collection.update_one({'_id':id},{'action':rcp["action"],'time_stamp':rcp["time_stamp"],'employee_id':rcp["employee_id"]})), 200, {'ContentType':'application/json'}
 
-@app.route('/worker', methods=["PUT"])
-def UpdateRCP():
-    try:
-        worker = request.files["worker"]
-        photo = request.files["photo"]
-    except:
-        return json.dumps({'success':False, 'message':"Invalid arguments"}), 400, {'ContentType':'application/json'}
-
-    if worker["_id"] is None:
-        return json.dumps({'success':False, 'message':"Lack of required parameters"}), 400, {'ContentType':'application/json'}
-
-    return dumps(collection.update_one({'_id':worker["_id"]},
-    {'fullname':worker["fullname"],
-    'hourlyWage':worker["hourlyWage"],
-    'overtimeHourlyWage':worker['overtimeHourlyWage'],
-    'email':worker['email'],
-    'phone':worker['phone'],
-    'position':worker['position'],
-    'department':worker['department']    
-    })), 200, {'ContentType':'application/json'}
-
 @app.route('/rcp', methods=["GET"])
 def GetRCP():
     employee_id = request.args.get("employee_id")
     rcp_id = request.args.get("rcp_id")
-    try:
-        startDate = int(request.args.get("startDate"))
-        endDate = int(request.args.get("endDate"))
-        print(startDate,endDate)
-    except:
-       return json.dumps({'success':False,'message':"Invalid arguments"}), 400, {'ContentType':'application/json'}
-    result = None
-    if startDate and endDate:
-       # 1554069600000 # 01.04.2019 <- start date
-       # 1556661600000 # 01.05.19 <- time stamp
-       # 1557056746403 # <- end date :c
-        result=rcp_collection.find({'time_stamp':{"$gte":startDate,"$lte":endDate }})
-        return dumps(result)   
-    if employee_id and startDate and endDate:
-        result=rcp_collection.find({'employee_id':ObjectId(employee_id),'time_stamp':{"$lte":endDate, "$gte":startDate}})
-        return dumps(result)
+
     if employee_id is not None:
         result = rcp_collection.find({"employee_id":ObjectId(employee_id)})
         return dumps(result)
@@ -159,11 +146,31 @@ def GetRCP():
        return dumps(result)
     if rcp_id is None and employee_id is None:
        result = rcp_collection.find()
-       return dumps(result) 
+       return dumps(result)
     if result is None:
        return json.dumps({'success':False,'message':"No RCP record found"}), 404, {'ContentType':'application/json'}
     return dumps(result)
 
+
+@app.route('/rcp/range', methods=["GET"])
+def GetRCPRange():
+    try:
+        employee_id = request.args.get("employee_id")
+        startDate = int(request.args.get("startDate"))
+        endDate = int(request.args.get("endDate"))
+        print(startDate, endDate)
+    except:
+       return json.dumps({'success':False,'message':"Invalid arguments"}), 400, {'ContentType':'application/json'}
+    result = None
+    if employee_id and startDate and endDate:
+        result=rcp_collection.find({'employee_id':ObjectId(employee_id),'time_stamp':{"$lte":endDate, "$gte":startDate}})
+        return dumps(result)
+    if startDate and endDate:
+       # 1554069600000 # 01.04.2019 <- start date
+       # 1556661600000 # 01.05.19 <- time stamp
+       # 1557056746403 # <- end date :c
+        result=rcp_collection.find({'time_stamp':{"$gte":startDate,"$lte":endDate }})
+        return dumps(result)
 
 def CleanDataFromDB(datafromdb):
     result=datafromdb.replace('\n','')
@@ -202,7 +209,7 @@ def DetectFacesinImage(file_stream):
                 #Add path to photos to list
 
                     record=collection.find_one({"value":faces["value"]})
-                    Name=faces["imie"]
+                    Name=faces["fullname"]
                     id=faces["_id"]
 
     # Return the result as json{"value":values[faces]}

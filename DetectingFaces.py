@@ -80,25 +80,26 @@ def GetPerson():
 
 @app.route('/worker', methods=["PUT"])
 def UpdateWorker():
-    try:
-        worker = request.files["worker"]
-        photo = request.files["photo"]
-    except:
-        return json.dumps({'success': False, 'message': "Invalid arguments"}), 400, {'ContentType': 'application/json'}
+    #try:
+        #photo = request.files["photo"]
+    #except:
+        #return json.dumps({'success': False, 'message': "Invalid arguments"}), 400, {'ContentType': 'application/json'}
 
-    if worker["_id"] is None:
+    if request.form["_id"] is None:
         return json.dumps({'success': False, 'message': "Lack of required parameters"}), 400, {'ContentType': 'application/json'}
 
-    return dumps(collection.update_one({'_id': worker["_id"]},
-                                       {'fullname': worker["fullname"],
-                                        'hourlyWage': worker["hourlyWage"],
-                                        'overtimeHourlyWage': worker['overtimeHourlyWage'],
-                                        'email': worker['email'],
-                                        'phone': worker['phone'],
-                                        'position': worker['position'],
-                                        'department': worker['department']
-                                        })), 200, {'ContentType': 'application/json'}
+    collection.update_one({'_id': ObjectId(request.form["_id"])},
+                                        {'$set':{
+                                       'fullname': request.form["fullname"],
+                                        'hourlyWage': float(request.form["hourlyWage"]),
+                                        'overtimeHourlyWage': float(request.form['overtimeHourlyWage']),
+                                        'email': request.form['email'],
+                                        'phone': request.form['phone'],
+                                        'position': request.form['position'],
+                                        'department': request.form['department']
+                                        }})
 
+    return dumps(collection.find_one({'_id': ObjectId(request.form['_id'])}))
 @app.route('/rcp', methods=["POST"])
 def PostRCP():
     try:

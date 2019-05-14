@@ -64,19 +64,11 @@ def PostWorker():
          return json.dumps({'success':False}), 404, {'ContentType':'application/json'}
 @app.route('/worker', methods=["GET"])
 def GetPerson():
-    id = request.args.get("id")
-    result = None
+    return dumps(collection.find())
 
-    if id is not None:
-        result = collection.find_one({'_id': ObjectId(id)})
-    else:
-        result = collection.find()
-
-    if result is None:
-        return json.dumps({'success':False,'message':"No employee record found"}), 404, {'ContentType':'application/json'}
-
-    return dumps(result)
-
+@app.route('/worker/<id>', methods=["GET"])
+def GetPersonById(id):
+    return dumps(collection.find_one({'_id': ObjectId(id)}))
 
 @app.route('/worker', methods=["PUT"])
 def UpdateWorker():
@@ -100,6 +92,7 @@ def UpdateWorker():
                                         }})
 
     return dumps(collection.find_one({'_id': ObjectId(request.form['_id'])}))
+
 @app.route('/rcp', methods=["POST"])
 def PostRCP():
     try:

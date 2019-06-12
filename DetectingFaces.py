@@ -199,12 +199,15 @@ def DetectFacesinImage(file_stream):
                      if helplist[point] is not '':
                         pureList.append(float(helplist[point]))
                 #Compare faces from Database and photo
-                 if ComparingFaces(pureList,unknown_face_encodings[0])[0]:
+                 try: 
+                     if ComparingFaces(pureList,unknown_face_encodings[0])[0]:
                 #Add path to photos to list
-
-                    record=collection.find_one({"value":faces["value"]})
-                    Name=faces["fullname"]
-                    id=faces["_id"]
+                       record=collection.find_one({"value":faces["value"]})
+                       Name=faces["fullname"]
+                       id=faces["_id"]
+                 except:
+                     Name="undefined"
+                     id="undefined"   
 
     # Return the result as json{"value":values[faces]}
 
@@ -217,4 +220,4 @@ def DetectFacesinImage(file_stream):
     #else:
     return jsonify(result)
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='192.168.1.101', port=5001, debug=True)
